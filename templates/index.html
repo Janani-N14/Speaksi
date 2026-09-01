@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaky AI • Pronunciation Checker & Speech Lab</title>
+    <meta name="description" content="Evaluate and practice English pronunciation with AI-powered acoustic similarity, speech recognition, and personalized speech therapist coaching.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Markdown Parser (Marked) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Background Glow Elements -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <div class="app-container">
+        <!-- Top Navbar / Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Speaky <span class="accent-text">AI</span></h1>
+                    <p class="tagline">Speech & Pronunciation Intelligence Lab</p>
+                </div>
+            </div>
+            <div class="header-badges">
+                <span class="badge badge-endpoint"><i class="fa-solid fa-code"></i> POST /check-pronunciation</span>
+                <span class="badge badge-status"><span class="status-dot"></span> System Ready</span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="main-grid">
+            <!-- Left Panel: Input & Recording Controls -->
+            <section class="card input-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-microphone-lines"></i> Practice & Record</h2>
+                    <span class="step-indicator">Step 1 & 2</span>
+                </div>
+
+                <!-- Target Word / Phrase Input -->
+                <div class="form-group">
+                    <label for="target-text" class="input-label">
+                        <span>Target Word or Phrase</span>
+                        <button type="button" id="btn-listen-target" class="btn-text-action" title="Listen to correct pronunciation">
+                            <i class="fa-solid fa-volume-high"></i> Listen Target
+                        </button>
+                    </label>
+                    <div class="input-wrapper">
+                        <input type="text" id="target-text" placeholder="e.g., Chameleon, Pronunciation, Phenomenon" value="Pronunciation" autocomplete="off" spellcheck="false">
+                        <button type="button" id="btn-clear-text" class="btn-clear" title="Clear text"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- Quick Practice Suggestions -->
+                    <div class="preset-chips">
+                        <span class="chips-label">Quick test words:</span>
+                        <button type="button" class="chip active" data-word="Pronunciation">Pronunciation</button>
+                        <button type="button" class="chip" data-word="Antigravity">Antigravity</button>
+                        <button type="button" class="chip" data-word="Speech Therapy">Speech Therapy</button>
+                        <button type="button" class="chip" data-word="Phenomenon">Phenomenon</button>
+                        <button type="button" class="chip" data-word="Chameleon">Chameleon</button>
+                        <button type="button" class="chip" data-word="Thoroughly">Thoroughly</button>
+                        <button type="button" class="chip" data-word="World">World</button>
+                    </div>
+                </div>
+
+                <!-- Input Mode Switcher: Mic vs Upload -->
+                <div class="tab-switcher">
+                    <button type="button" id="tab-mic" class="tab-btn active">
+                        <i class="fa-solid fa-microphone"></i> Record with Mic
+                    </button>
+                    <button type="button" id="tab-file" class="tab-btn">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Audio File
+                    </button>
+                </div>
+
+                <!-- Mode 1: Microphone Recording Panel -->
+                <div id="panel-mic" class="recording-panel">
+                    <!-- Live Visualizer Canvas -->
+                    <div class="visualizer-container">
+                        <canvas id="waveform-canvas"></canvas>
+                        <div id="recording-time" class="recording-timer">00:00</div>
+                        <div id="mic-status-label" class="mic-status-text">Click "Start Recording" and speak clearly</div>
+                    </div>
+
+                    <!-- Recording Controls -->
+                    <div class="recorder-actions">
+                        <button type="button" id="btn-start-record" class="btn btn-record">
+                            <i class="fa-solid fa-circle"></i> Start Recording
+                        </button>
+                        <button type="button" id="btn-stop-record" class="btn btn-stop" disabled>
+                            <i class="fa-solid fa-stop"></i> Stop
+                        </button>
+                        <button type="button" id="btn-reset-record" class="btn btn-secondary" style="display:none;">
+                            <i class="fa-solid fa-rotate-left"></i> Re-record
+                        </button>
+                    </div>
+
+                    <!-- Recorded Audio Playback Preview -->
+                    <div id="recorded-preview-box" class="playback-box" style="display:none;">
+                        <span class="preview-label"><i class="fa-solid fa-play"></i> Your Recorded Audio:</span>
+                        <audio id="audio-player" controls preload="metadata"></audio>
+                    </div>
+                </div>
+
+                <!-- Mode 2: File Upload Panel -->
+                <div id="panel-file" class="upload-panel" style="display:none;">
+                    <div id="drop-zone" class="drop-zone">
+                        <i class="fa-solid fa-file-audio drop-icon"></i>
+                        <p class="drop-title">Drag & drop your audio file here</p>
+                        <p class="drop-subtitle">Supports WAV, MP3, WebM, M4A, OGG</p>
+                        <label for="file-input" class="btn btn-secondary btn-file-browse">
+                            <i class="fa-solid fa-folder-open"></i> Browse File
+                        </label>
+                        <input type="file" id="file-input" accept="audio/*" style="display:none;">
+                        <div id="selected-file-info" class="selected-file-badge" style="display:none;">
+                            <i class="fa-solid fa-check-circle"></i> <span id="selected-filename"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="action-footer">
+                    <button type="button" id="btn-analyze" class="btn btn-primary btn-submit">
+                        <span class="btn-text"><i class="fa-solid fa-sparkles"></i> Check Pronunciation</span>
+                        <span class="btn-loader" style="display:none;"><i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing Audio...</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results & AI Speech Therapist Coaching -->
+            <section class="card results-card" id="results-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-simple"></i> Evaluation & Speaky's Coaching</h2>
+                    <span class="badge badge-pill" id="score-status-pill">Awaiting Input</span>
+                </div>
+
+                <!-- Empty State Placeholder -->
+                <div id="results-empty-state" class="empty-state">
+                    <div class="empty-icon-wrap">
+                        <i class="fa-solid fa-ear-listen empty-icon"></i>
+                    </div>
+                    <h3>Ready to Evaluate Your Speech</h3>
+                    <p>Enter a target phrase, record or upload your audio on the left, and click <strong>Check Pronunciation</strong> to inspect your acoustic accuracy, transcription match, and AI speech tips.</p>
+                </div>
+
+                <!-- Analysis Error Message -->
+                <div id="results-error" class="alert-error" style="display:none;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="error-message-text">Something went wrong during evaluation.</span>
+                </div>
+
+                <!-- Results Content (Rendered on analysis) -->
+                <div id="results-content" class="results-content" style="display:none;">
+                    <!-- Top Metrics: Gauge + Comparison -->
+                    <div class="metrics-row">
+                        <!-- Circular Score Gauge -->
+                        <div class="score-gauge-card">
+                            <div class="gauge-wrap">
+                                <svg class="gauge-svg" viewBox="0 0 120 120">
+                                    <circle class="gauge-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle id="gauge-progress" class="gauge-progress" cx="60" cy="60" r="50"></circle>
+                                </svg>
+                                <div class="gauge-center">
+                                    <span id="gauge-number" class="gauge-number">0</span>
+                                    <span class="gauge-unit">%</span>
+                                </div>
+                            </div>
+                            <span class="gauge-title">Pronunciation Match</span>
+                        </div>
+
+                        <!-- Recognition Comparison Box -->
+                        <div class="comparison-card">
+                            <div class="comp-item">
+                                <span class="comp-label"><i class="fa-solid fa-bullseye"></i> Target Phrase:</span>
+                                <div id="target-display" class="comp-value target-highlight">--</div>
+                            </div>
+                            <div class="comp-item">
+                                <span class="comp-label"><i class="fa-solid fa-waveform-lines"></i> Recognized Speech:</span>
+                                <div id="transcription-display" class="comp-value recognized-highlight">--</div>
+                            </div>
+                            <div class="comp-item" id="mismatch-container">
+                                <span class="comp-label"><i class="fa-solid fa-circle-exclamation"></i> Sounds to Work On:</span>
+                                <div id="mismatch-tags" class="tag-cloud">
+                                    <span class="tag tag-perfect"><i class="fa-solid fa-check"></i> Perfect Match</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Speech Therapist Tips ("Speaky") -->
+                    <div class="therapist-card">
+                        <div class="therapist-header">
+                            <div class="therapist-avatar">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <h3 class="therapist-title">Speaky's Coaching & Advice</h3>
+                                <p class="therapist-subtitle">Mouth movement guides & vocal exercises</p>
+                            </div>
+                        </div>
+                        <div id="therapist-tips-body" class="therapist-body markdown-body">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Phonetic Video Guide Section -->
+                    <div id="video-guide-section" class="video-section" style="display:none;">
+                        <h3 class="section-title"><i class="fa-brands fa-youtube"></i> Video Pronunciation Guides</h3>
+                        <p class="section-subtitle">Click a sound to watch the exact mouth formation technique:</p>
+                        <div id="video-buttons-container" class="video-chips-row"></div>
+                        <div id="video-frame-wrap" class="video-frame-container" style="display:none;">
+                            <iframe id="video-iframe" src="" title="Pronunciation Tutorial" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </div>
+
+                    <!-- API Response Inspector Dropdown -->
+                    <details class="json-inspector">
+                        <summary><i class="fa-solid fa-code"></i> Raw JSON Response (Backend Output)</summary>
+                        <pre id="raw-json-viewer"></pre>
+                    </details>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Speaky AI • Advanced Speech Therapy & Pronunciation Evaluation • Powered by Wav2Vec2 & MFCC Acoustic Modeling</p>
+        </footer>
+    </div>
+
+    <!-- Hidden Audio element for Target TTS preview -->
+    <audio id="target-tts-player" preload="none"></audio>
+
+    <!-- Custom JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
